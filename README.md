@@ -24,6 +24,12 @@ We strive to achieve political literacy and increase political engagement locall
       4. Identifying political affliation being inaccurate 
 
 **Risk Mitigation Plan:**  
+
+      1. Careful research and assuring counter balances for sources that have even the slightest lean 
+      2. Gather as many APIs are possible that relate to our vision 
+      3. Proper encryption and database security 
+      4. Delegate to external source OR allow user to self-identify 
+      
 **Version Control:**  
 
   Our version control is going to be github and git. Using branches for each feature along with a testing branch. We want to use pull requests to merge each feature into testing branch with group approval. 
