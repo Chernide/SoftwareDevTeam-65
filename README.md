@@ -38,4 +38,5 @@ We strive to achieve political literacy and increase political engagement locall
   
 **Proposed Architecture:**  
 
+We're planning on splitting this app up into two key components: the API layer and the front-end application. The API layer, which we plan on writing using some Python framework (such as [Flask](http://flask.pocoo.org/)), will grab relevant data from various existing APIs around the internet, and serve them at REST API endpoints. It'll also handle all interfacing with the MySQL database and authentication. The front-end application, written in HTML/CSS/JavaScript (likely using some framework like [React](https://facebook.github.io/react/)), will send the user's location to that API layer and receive relevant data, and will then display it in a clean, intuitive interface.
   
