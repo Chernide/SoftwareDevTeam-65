@@ -1,7 +1,8 @@
 # SoftwareDevTeam-65
-**Team Name:**  
+**Team Name:** Aqua Blue   
 **Members:** Krishna Dholakiya, Eoin Doherty, Austin Argueso-Nott, Denver Chernin, Albert Huang, Tyler Bagala  
-**Vision Statement:**  
+**Description:**
+**Vision Statement:** 
 **Motivation:**  
 **Risks:**  
 **Risk Mitigation Plan:**  
