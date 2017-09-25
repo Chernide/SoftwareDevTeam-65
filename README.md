@@ -3,10 +3,10 @@
 **Members:** Krishna Dholakiya, Eoin Doherty, Austin Argueso-Nott, Denver Chernin, Albert Huang, Tyler Bagala  
 **Description:**
 
-  A web-based platform that displays unbiased political information relevant to user location. We will also provide information on local politicians, policies, and events. Based on zipcode and/or geolocation we will present a collection of local representatives and their platforms. We strive to achieve political literacy and increase political
-engagement within our community. 
+  A web-based platform that displays unbiased political information relevant to user location. We will also provide information on local politicians, policies, and events. Based on zip-code and/or geolocation we will present a collection of local representatives and their platforms. We strive to achieve political literacy and increase political engagement within our community.
 
-  As we make progress and gain experience this project will grow. We would like to have spectrum quizzes to tag the information presented to users. This will not bias our site as we will provide information on both sides of every issue to insure well rounded political awareness. We will do rigorous research to insure that the news platforms we pull from will be credible and unbiased. The website will notify the users when upcoming elections are near making sure they are registered to vote and know of their local voting locations. 
+  As we make progress and gain experience this project will grow. We would like to have spectrum quizzes to tag the information presented to users. This will not bias our site as we will provide information on both sides of every issue to insure well rounded political awareness. We will do rigorous research to ensure that the news platforms we pull from will be credible and unbiased. The website will notify the users when upcoming elections are near making sure they are registered to vote and know of their local voting locations.
+ 
   
 **Vision Statement:**
 
@@ -18,10 +18,10 @@ We strive to achieve political literacy and increase political engagement locall
 
 **Risks:**
 
-      1. Remaining unbaised
+      1. Remaining unbiased
       2. APIs could potential have dirty data/not enough data 
-      3. User information security (can be linked to political affliation) 
-      4. Identifying political affliation being inaccurate 
+      3. User information security (can be linked to political affiliation) 
+      4. Identifying political affiliation being inaccurate 
 
 **Risk Mitigation Plan:**  
 
@@ -32,7 +32,7 @@ We strive to achieve political literacy and increase political engagement locall
       
 **Version Control:**  
 
-  Our version control is going to be github and git. Using branches for each feature along with a testing branch. We want to use pull requests to merge each feature into testing branch with group approval. 
+  Our version control is going to be Github and Git. Using branches for each feature along with a testing branch. We want to use pull requests to merge each feature into testing branch with group approval. 
   
 **Development Method:**  
 
