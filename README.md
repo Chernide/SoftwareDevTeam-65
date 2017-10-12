@@ -1,5 +1,5 @@
 # SoftwareDevTeam-65
-**Team Name:** Aqua Blue   
+**Team Name:** Noise Cancelling Politics  
 **Members:** Krishna Dholakiya, Eoin Doherty, Austin Argueso-Nott, Denver Chernin, Albert Huang, Tyler Bagala  
 **Description:**
 
