@@ -31,6 +31,6 @@ def PollDatabaseStateandChamber(state, chamber):
 
 if __name__ == "__main__":
 	#PollDatabaseJustState('CO')
-	PollDatabaseStateandChamber('NJ', 'Senate')
+	PollDatabaseStateandChamber('CO', 'House')
 
 
