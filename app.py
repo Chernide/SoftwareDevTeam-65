@@ -2,6 +2,9 @@ from flask import Flask, jsonify, request
 import requests
 import os
 import json
+import bcrypt
+import psycopg2
+import binascii
 
 # Returns a list of dictionaries for each politician
 # This can then be converted to JSON
@@ -18,12 +21,13 @@ def processCivicResp(response):
             politician['officeName'] = office['name']
             # Full keys are 'address', 'name', 'party', 'photoUrl', 'channels', 'urls', 'phones', emails
             # Some officials don't have a website or a photoUrl though
-            # I was planning on copying over all of those keys anyway so this works ¯\_(ツ)_/¯
+            # I was planning on copying over all of those keys anyway so this works
             for key in official.keys():
                 politician[key] = official[key]
         retInfo.append(politician)
 
     return retInfo
+
 
 app = Flask(__name__)
 
@@ -54,6 +58,67 @@ def echoArgs(zipCode):
     apiKey = os.environ["GoogleAPIKey"]
     info = requests.get("https://www.googleapis.com/civicinfo/v2/representatives?key=%s&address=%d" % (apiKey, zipCode))
     return info.text;
+
+@app.route('/signup', methods=['get', 'post'])
+def signup():
+    email = request.args.get('email')
+    password = request.args.get('password')
+    msg = "Not enough information"
+
+    if email != None and password != None:
+        conn = psycopg2.connect( host=os.environ['HostName'], user=os.environ['UserName'], password=os.environ['password'], dbname=os.environ['DataBase'], port="5432")
+        cur = conn.cursor()
+        command = "SELECT * FROM users WHERE email = (%s);"
+        data = (email, )
+        cur.execute(command, data)
+        result = cur.fetchall()
+
+        if len(result) > 0:
+            msg = "Email taken"
+        else:
+            encPwd = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt(12))
+            encPwd = encPwd.decode('utf-8') # weird conversion from bytes to string to make SQL play nice
+            createAccount = "INSERT INTO users (email, encrypted_Password) VALUES (%s, %s)"
+            accountData = (email, encPwd)
+            cur.execute(createAccount, accountData)
+            conn.commit()
+            msg = "Account Created"
+
+        cur.close()
+        conn.close()
+
+    return msg
+
+@app.route('/login', methods=['get', 'post'])
+def login():
+    email = request.args.get('email')
+    password = request.args.get('password')
+    msg = "Not enough information"
+
+    if email != None and password != None:
+        conn = psycopg2.connect( host=os.environ['HostName'], user=os.environ['UserName'], password=os.environ['password'], dbname=os.environ['DataBase'], port="5432")
+        cur = conn.cursor()
+        command = "SELECT * FROM users WHERE email = (%s);"
+        data = (email, )
+        cur.execute(command, data)
+        result = cur.fetchall()
+
+        if len(result) > 0:
+            print(result[0])
+            hashedPw = result[0][2]
+            correctPw = bcrypt.checkpw(password.encode('utf-8'), hashedPw.encode('utf-8'))
+            if correctPw:
+                msg = "Logged in"
+            else:
+                msg = "Incorrect password"
+        else:
+            msg = "User does not exist"
+
+        cur.close()
+        conn.close()
+
+    return msg
+
 
 if __name__ == "__main__":
 	app.run()
