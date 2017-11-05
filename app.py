@@ -61,8 +61,9 @@ def echoArgs(zipCode):
 
 @app.route('/signup', methods=['get', 'post'])
 def signup():
-    email = request.args.get('email')
-    password = request.args.get('password')
+    content = request.get_json()
+    email = content['email']
+    password = content['password']
     msg = "Not enough information"
 
     if email != None and password != None:
@@ -91,8 +92,9 @@ def signup():
 
 @app.route('/login', methods=['get', 'post'])
 def login():
-    email = request.args.get('email')
-    password = request.args.get('password')
+    content = request.get_json()
+    email = content['email']
+    password = content['password']
     msg = "Not enough information"
 
     if email != None and password != None:
