@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request
+from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity
 import requests
 import os
 import json
@@ -30,14 +31,82 @@ def processCivicResp(response):
 
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = os.environ['JWT_KEY']
+jwt = JWTManager(app)
 
 @app.route('/')
 def index():
     return "This probably isn't what you want.\n Try /getPoliticians/YOUR_ZIP for a list of your local politicians"
 
+@app.route('/signup', methods=['get', 'post'])
+def signup():
+    content = request.get_json(silent = True)
+    email = content.get('email')
+    password = content.get('password')
+
+    if email == None or password == None:
+        return jsonify({'msg': 'Email/password not provided'}), 400
+    else:
+        conn = psycopg2.connect( host=os.environ['HostName'], user=os.environ['UserName'], password=os.environ['password'], dbname=os.environ['DataBase'], port="5432")
+        cur = conn.cursor()
+        command = "SELECT * FROM users WHERE email = (%s);"
+        data = (email, )
+        cur.execute(command, data)
+        result = cur.fetchall()
+
+        if len(result) > 0:
+            cur.close()
+            conn.close()
+            return jsonify({'msg': 'Account already taken'}), 401
+        else:
+            encPwd = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt(12))
+            encPwd = encPwd.decode('utf-8') # weird conversion from bytes to string to make SQL play nice
+            createAccount = "INSERT INTO users (email, encrypted_Password) VALUES (%s, %s)"
+            accountData = (email, encPwd)
+            cur.execute(createAccount, accountData)
+            conn.commit()
+
+            cur.close()
+            conn.close()
+            token = create_access_token(email)
+            return jsonify({'token': token}), 200
+
+
+@app.route('/login', methods=['get', 'post'])
+def login():
+    content = request.get_json(silent = True)
+    email = content.get('email')
+    password = content.get('password')
+    msg = "Not enough information"
+
+    if email == None or password == None:
+        return jsonify({'msg': 'Email/password not provided'}), 400
+    else:
+        conn = psycopg2.connect( host=os.environ['HostName'], user=os.environ['UserName'], password=os.environ['password'], dbname=os.environ['DataBase'], port="5432")
+        cur = conn.cursor()
+        command = "SELECT * FROM users WHERE email = (%s);"
+        data = (email, )
+        cur.execute(command, data)
+        result = cur.fetchall()
+        cur.close()
+        conn.close()
+
+        if len(result) > 0:
+            print(result[0])
+            hashedPw = result[0][2]
+            correctPw = bcrypt.checkpw(password.encode('utf-8'), hashedPw.encode('utf-8'))
+            if correctPw:
+                token = create_access_token(email)
+                return jsonify({'token': token}), 200
+            else:
+                return jsonify({'msg': 'Invalid credentials'}), 401
+        else:
+            return jsonify({'msg': 'User not found'}), 404
+
 # The route to an API response
 # I can add more arguments to the url like a password later
 @app.route('/getPoliticians/<int:zipCode>')
+@jwt_required
 def getPoliticians(zipCode):
     # NOTE: The API can take state codes or even full addresses, but zip code is most efficient
     apiKey = os.environ["GoogleAPIKey"]
@@ -54,73 +123,11 @@ def getPoliticians(zipCode):
 # Returns the unprocessed response from the google API
 # indenting for this is weird in a browser but alright in curl
 @app.route('/civicInfo/<int:zipCode>')
+@jwt_required
 def echoArgs(zipCode):
     apiKey = os.environ["GoogleAPIKey"]
     info = requests.get("https://www.googleapis.com/civicinfo/v2/representatives?key=%s&address=%d" % (apiKey, zipCode))
     return info.text;
-
-@app.route('/signup', methods=['get', 'post'])
-def signup():
-    content = request.get_json()
-    email = content['email']
-    password = content['password']
-    msg = "Not enough information"
-
-    if email != None and password != None:
-        conn = psycopg2.connect( host=os.environ['HostName'], user=os.environ['UserName'], password=os.environ['password'], dbname=os.environ['DataBase'], port="5432")
-        cur = conn.cursor()
-        command = "SELECT * FROM users WHERE email = (%s);"
-        data = (email, )
-        cur.execute(command, data)
-        result = cur.fetchall()
-
-        if len(result) > 0:
-            msg = "Email taken"
-        else:
-            encPwd = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt(12))
-            encPwd = encPwd.decode('utf-8') # weird conversion from bytes to string to make SQL play nice
-            createAccount = "INSERT INTO users (email, encrypted_Password) VALUES (%s, %s)"
-            accountData = (email, encPwd)
-            cur.execute(createAccount, accountData)
-            conn.commit()
-            msg = "Account Created"
-
-        cur.close()
-        conn.close()
-
-    return msg
-
-@app.route('/login', methods=['get', 'post'])
-def login():
-    content = request.get_json()
-    email = content['email']
-    password = content['password']
-    msg = "Not enough information"
-
-    if email != None and password != None:
-        conn = psycopg2.connect( host=os.environ['HostName'], user=os.environ['UserName'], password=os.environ['password'], dbname=os.environ['DataBase'], port="5432")
-        cur = conn.cursor()
-        command = "SELECT * FROM users WHERE email = (%s);"
-        data = (email, )
-        cur.execute(command, data)
-        result = cur.fetchall()
-
-        if len(result) > 0:
-            print(result[0])
-            hashedPw = result[0][2]
-            correctPw = bcrypt.checkpw(password.encode('utf-8'), hashedPw.encode('utf-8'))
-            if correctPw:
-                msg = "Logged in"
-            else:
-                msg = "Incorrect password"
-        else:
-            msg = "User does not exist"
-
-        cur.close()
-        conn.close()
-
-    return msg
-
 
 if __name__ == "__main__":
 	app.run()
