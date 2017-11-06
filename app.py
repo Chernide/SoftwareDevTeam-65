@@ -105,12 +105,15 @@ def login():
 
 # The route to an API response
 # I can add more arguments to the url like a password later
-@app.route('/getPoliticians/<int:zipCode>')
+@app.route('/getPoliticians')
 @jwt_required
-def getPoliticians(zipCode):
-    # NOTE: The API can take state codes or even full addresses, but zip code is most efficient
-    apiKey = os.environ["GoogleAPIKey"]
-    info = requests.get("https://www.googleapis.com/civicinfo/v2/representatives?key=%s&address=%d" % (apiKey, zipCode))
+def getPoliticians():
+    city = request.args.get('city')
+    state = request.args.get('state')
+    city = city.strip()
+    address = city + ', ' + state
+    requestParams = {'key': os.environ["GoogleAPIKey"], 'address': address}
+    info = requests.get("https://www.googleapis.com/civicinfo/v2/representatives", params=requestParams)
 
     if info.status_code == 200:
         # The processed response puts all of the fields in alphabetical order because python is weird
@@ -122,11 +125,16 @@ def getPoliticians(zipCode):
 
 # Returns the unprocessed response from the google API
 # indenting for this is weird in a browser but alright in curl
-@app.route('/civicInfo/<int:zipCode>')
+@app.route('/civicInfo')
 @jwt_required
-def echoArgs(zipCode):
+def echoArgs():
+    city = request.args.get('city')
+    state = request.args.get('state')
+    city = city.strip()
+    address = city + ', ' + state
+    requestParams = {'key': os.environ["GoogleAPIKey"], 'address': address}
     apiKey = os.environ["GoogleAPIKey"]
-    info = requests.get("https://www.googleapis.com/civicinfo/v2/representatives?key=%s&address=%d" % (apiKey, zipCode))
+    info = requests.get("https://www.googleapis.com/civicinfo/v2/representatives", params=requestParams)
     return info.text;
 
 if __name__ == "__main__":
