@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity
+from flask_cors import CORS
 import requests
 import os
 import json
@@ -31,6 +32,7 @@ def processCivicResp(response):
 
 
 app = Flask(__name__)
+CORS(app)
 app.config['SECRET_KEY'] = os.environ['JWT_KEY']
 jwt = JWTManager(app)
 
