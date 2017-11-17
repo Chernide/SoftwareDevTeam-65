@@ -26,7 +26,7 @@ def processCivicResp(response):
             # I was planning on copying over all of those keys anyway so this works
             for key in official.keys():
                 politician[key] = official[key]
-        retInfo.append(politician)
+            retInfo.append(politician)
 
     return retInfo
 
