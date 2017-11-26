@@ -140,15 +140,15 @@ def echoArgs():
     return info.text
 
 # Takes a state code and returns a list of reps and senators
-@app.route('/getStateReps', methods=["get", "post"])
-def getStateReps():
+@app.route('/getFedReps', methods=["get", "post"])
+def getFedReps():
     stateCode = request.args.get('state')
     if stateCode == None:
         return jsonify({"msg": "State code not sent"})
     else:
         conn = psycopg2.connect( host=os.environ['HostName'], user=os.environ['UserName'], password=os.environ['password'], dbname=os.environ['DataBase'], port="5432")
         cur = conn.cursor()
-        command = 'SELECT * FROM politicians WHERE state = (%s);'
+        command = "SELECT * FROM politicians WHERE state = (%s) OR state = 'USA';"
         data = (stateCode, )
         cur.execute(command, data)
         result = cur.fetchall()
