@@ -137,7 +137,38 @@ def echoArgs():
     requestParams = {'key': os.environ["GoogleAPIKey"], 'address': address}
     apiKey = os.environ["GoogleAPIKey"]
     info = requests.get("https://www.googleapis.com/civicinfo/v2/representatives", params=requestParams)
-    return info.text;
+    return info.text
+
+# Takes a state code and returns a list of reps and senators
+@app.route('/getStateReps', methods=["get", "post"])
+def getStateReps():
+    stateCode = request.args.get('state')
+    if stateCode == None:
+        return jsonify({"msg": "State code not sent"})
+    else:
+        conn = psycopg2.connect( host=os.environ['HostName'], user=os.environ['UserName'], password=os.environ['password'], dbname=os.environ['DataBase'], port="5432")
+        cur = conn.cursor()
+        command = 'SELECT * FROM politicians WHERE state = (%s);'
+        data = (stateCode, )
+        cur.execute(command, data)
+        result = cur.fetchall()
+        cur.close()
+        conn.close()
+        if len(result) == 0:
+            return jsonify({"msg": "Invalid state code"})
+        politicians = []
+        for entry in result:
+            politician = {}
+            politician['name'] = entry[1]
+            politician['chamber'] = entry[2]
+            politician['party'] = entry[3]
+            politician['state'] = entry[4]
+            politician['phone'] = entry[5]
+            politician['twitter'] = entry[6]
+
+            politicians.append(politician)
+        
+        return jsonify(politicians)
 
 if __name__ == "__main__":
 	app.run()
