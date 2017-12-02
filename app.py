@@ -43,8 +43,11 @@ def index():
 @app.route('/signup', methods=['get', 'post'])
 def signup():
     content = request.get_json(silent = True)
-    email = content.get('email')
-    password = content.get('password')
+    try: 
+        email = content.get('email')
+        password = content.get('password')
+    except AttributeError:
+        return jsonify({'msg': 'Email/password not provided'}), 400
 
     if email == None or password == None:
         return jsonify({'msg': 'Email/password not provided'}), 400
@@ -94,7 +97,6 @@ def login():
         conn.close()
 
         if len(result) > 0:
-            print(result[0])
             hashedPw = result[0][2]
             correctPw = bcrypt.checkpw(password.encode('utf-8'), hashedPw.encode('utf-8'))
             if correctPw:
@@ -112,8 +114,11 @@ def login():
 def getPoliticians():
     city = request.args.get('city')
     state = request.args.get('state')
-    city = city.strip()
-    address = city + ', ' + state
+    if city != None and state != None:
+        city = city.strip()
+        address = city + ', ' + state
+    else:
+        return jsonify({'msg': 'ERROR: Invalid parameters'})
     requestParams = {'key': os.environ["GoogleAPIKey"], 'address': address}
     info = requests.get("https://www.googleapis.com/civicinfo/v2/representatives", params=requestParams)
 
@@ -148,7 +153,7 @@ def getFedReps():
     else:
         conn = psycopg2.connect( host=os.environ['HostName'], user=os.environ['UserName'], password=os.environ['password'], dbname=os.environ['DataBase'], port="5432")
         cur = conn.cursor()
-        command = "SELECT * FROM politicians WHERE state = (%s) OR state = 'USA';"
+        command = "SELECT * FROM politicians WHERE state = (%s);"
         data = (stateCode, )
         cur.execute(command, data)
         result = cur.fetchall()
@@ -156,6 +161,14 @@ def getFedReps():
         conn.close()
         if len(result) == 0:
             return jsonify({"msg": "Invalid state code"})
+        else:
+            conn = psycopg2.connect( host=os.environ['HostName'], user=os.environ['UserName'], password=os.environ['password'], dbname=os.environ['DataBase'], port="5432")
+            cur = conn.cursor()
+            othersCMD = "SELECT * FROM politicians WHERE state = 'USA';"
+            cur.execute(othersCMD)
+            result += cur.fetchall()
+            cur.close()
+            conn.close()
         politicians = []
         for entry in result:
             politician = {}
